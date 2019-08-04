@@ -27,24 +27,8 @@ typedef vector v;
 
 f S(v p){U sqrt(p*p)-1;}
 f M(v o,v d){f t=0;for(i s=100;s--;){f m = S(o+d*t);if(m<E)break;if(m>far)break;t+=m;}U t;}
-v N(v p){U !v(
-        S(v(p.x+E,p.y,p.z))-S(v(p.x-E,p.y,p.z)),
-        S(v(p.x,p.y+E,p.z))-S(v(p.x,p.y-E,p.z)),
-        S(v(p.x,p.y,p.z+E))-S(v(p.x, p.y,p.z-E)));}
-
-vector phong(v n, v l, v d)
-{
-    static f a = 1.4f; static v ka(0.2, 0.2, 0.2), kd(0.4f, 0.0f, 0.6f), ks(0.4f, 0.0f, 0.2f);
-    vector reflection = n*(l*n)*2+(l*-1);
-    vector one (1.0f, 1.0f, 1.0f);
-
-    vector ambient = ka;
-    vector diffuse = kd*(l*n)%0.0f;
-    vector refl = ks*pow(fmax(reflection*d,0),a);
-
-    vector color = ambient + diffuse + refl;
-    return color;
-}
+v N(v p){U !v(S(v(p.x+E,p.y,p.z))-S(v(p.x-E,p.y,p.z)),S(v(p.x,p.y+E,p.z))-S(v(p.x,p.y-E,p.z)),S(v(p.x,p.y,p.z+E))-S(v(p.x, p.y,p.z-E)));}
+v P(v n, v l, v d) {U v(0.2, 0.2, 0.2) + v(0.4f, 0.0f, 0.6f)*(l*n)%0.0f+v(0.4f, 0.0f, 0.2f)*pow(fmax((n*(l*n)*2+(l*-1))*d,0),1.4f);}
 
 int main()
 {
@@ -64,7 +48,7 @@ int main()
         vector color(0.9f, 0.9f, 0.9f);
         if ((t=M(origin, direction)) < far) { 
             v p = origin+direction*t; 
-            color = phong(N(p), !(light+(p*-1)), direction * (-1.0f));
+            color = P(N(p), !(light+(p*-1)), direction * (-1.0f));
         }
         if (!DEBUG) printf("%c%c%c",(int)(color.x*255.0f), (int)(color.y*255.0f), (int)(color.z*255.0f)); 
     }
