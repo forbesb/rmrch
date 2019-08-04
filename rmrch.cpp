@@ -9,8 +9,8 @@
 #define E epsilon
 
 
-typedef float f;
-typedef int i;
+typedef float F;
+typedef int I;
 
 struct vector {
     float x, y, z;
@@ -18,15 +18,25 @@ struct vector {
     vector(float a, float b, float c){x = a; y = b; z = c;}
     vector operator+(vector r){U vector(x+r.x, y+r.y, z+r.z);} // vector add
     float operator*(vector r){U x * r.x + y * r.y + z * r.z;} // vector dot
-    vector operator*(f r){U vector(x*r, y*r, z*r);} //scalar multiply
+    vector operator*(F r){U vector(x*r, y*r, z*r);} //scalar multiply
     vector operator^(vector r){U vector(y * r.z - z * r.y, z * r.x - x * r.z, x * r.y - y * r.z);} // vector cross
     vector operator!(){U this->normalize();}
-    vector operator%(f r){U vector(fmax(x,r),fmax(y,r),fmax(z,r));}
+    vector operator%(F r){U vector(fmax(x,r),fmax(y,r),fmax(z,r));}
     vector normalize(){U (*this)*(1 / sqrt((*this)*(*this)));}};
 typedef vector v;
 
-f S(v p){U sqrt(p*p)-1;}
-f M(v o,v d){f t=0;for(i s=100;s--;){f m = S(o+d*t);if(m<E)break;if(m>far)break;t+=m;}U t;}
+F S(v p){U sqrt(p*p)-1;}
+I M(v o,v d,F&t)
+{
+    for(I s=100;s--;)
+    {
+        F m = S(o+d*t);
+        if(m<E)U 2;
+        if(m>far)break;
+        t+=m;
+    }
+    U (0.01f<d.y);
+}
 v N(v p){U !v(
         S(v(p.x+E,p.y,p.z))-S(v(p.x-E,p.y,p.z)),
         S(v(p.x,p.y+E,p.z))-S(v(p.x,p.y-E,p.z)),
@@ -34,7 +44,7 @@ v N(v p){U !v(
 
 vector phong(v n, v l, v d)
 {
-    static f a = 1.4f; static v ka(0.2, 0.2, 0.2), kd(0.4f, 0.0f, 0.6f), ks(0.4f, 0.0f, 0.2f);
+    static F a = 1.4f; static v ka(0.2, 0.2, 0.2), kd(0.4f, 0.0f, 0.6f), ks(0.4f, 0.0f, 0.2f);
     vector reflection = n*(l*n)*2+(l*-1);
     vector one (1.0f, 1.0f, 1.0f);
 
@@ -58,13 +68,16 @@ int main()
     
     for (int y = 512; y--;)
     for (int x = 512; x--;){
-        f a = (((float)y) - 256.0)*(1.0f/512.0f), b = (((float)x) - 256.0)*(1.0f/512.0f);
-        f t;
+        F a = (((float)y) - 256.0)*(1.0f/512.0f), b = (((float)x) - 256.0)*(1.0f/512.0f);
+        F t=0; I i;
         vector direction = (forward + up*a + horiz*b).normalize();
         vector color(0.9f, 0.9f, 0.9f);
-        if ((t=M(origin, direction)) < far) { 
+        i=M(origin, direction,t);
+        if (i==2) { 
             v p = origin+direction*t; 
             color = phong(N(p), !(light+(p*-1)), direction * (-1.0f));
+        } else if (i&1){
+            color = v(0.1f, 0.4f, 0.8f) * (pow(1-direction.y, 4));
         }
         if (!DEBUG) printf("%c%c%c",(int)(color.x*255.0f), (int)(color.y*255.0f), (int)(color.z*255.0f)); 
     }
