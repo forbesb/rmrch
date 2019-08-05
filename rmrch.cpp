@@ -35,7 +35,8 @@ I M(v o,v d,F&t)
         if(m>far)break;
         t+=m;
     }
-    U (0.01f<d.y);
+    t=-o.z/d.z;
+    U (0.001f<d.y);
 }
 v N(v p){U !v(
         S(v(p.x+E,p.y,p.z))-S(v(p.x-E,p.y,p.z)),
@@ -62,8 +63,8 @@ int main()
 
     vector origin (0.0f, 0.0f, 3.0f);
     vector forward(0.0f, 0.0f, -1.0f);
-    vector up     (0.0f, 1.0f, 0.0f);
-    vector horiz  (1.0f, 0.0f,0.0f);
+    vector up     (0.0f, 1.f, 0.f);
+    vector horiz  (1.f, 0.f,0.0f);
     vector light  (3.0f, 3.0f, 3.0f);
     
     for (int y = 512; y--;)
@@ -73,12 +74,17 @@ int main()
         vector direction = (forward + up*a + horiz*b).normalize();
         vector color(0.9f, 0.9f, 0.9f);
         i=M(origin, direction,t);
+        v p = origin+direction*t; 
+        F P = -origin.z/direction.z;
         if (i==2) { 
-            v p = origin+direction*t; 
             color = phong(N(p), !(light+(p*-1)), direction * (-1.0f));
-        } else if (i&1){
+        } else if (i&1)
             color = v(0.1f, 0.4f, 0.8f) * (pow(1-direction.y, 4));
-        }
+        else 
+            color = v(0.7f,0.7f,0.7f)*
+                    ((I)(ceil(p.x*4)+
+                         ceil(p.y*4)) 
+                     & 1);
         if (!DEBUG) printf("%c%c%c",(int)(color.x*255.0f), (int)(color.y*255.0f), (int)(color.z*255.0f)); 
     }
 }
